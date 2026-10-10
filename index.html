@@ -1,0 +1,1039 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A Cosmic Surprise for Saim</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg-space: #050515;
+  --navy-deep: #0a0a26;
+  --purple-glow: #3a1c5d;
+  --violet: #7b2cbf;
+  --text-light: #e2e8f0;
+  --text-muted: #94a3b8;
+  --accent-gold: #d4af37;
+  --paper: #f4efe2;
+  --ink: #2c2519;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  min-height: 100%;
+  background: var(--bg-space);
+  font-family: Inter, sans-serif;
+  color: var(--text-light);
+}
+
+body {
+  overflow: hidden;
+}
+
+#space-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.screen {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 24px;
+  overflow-y: auto;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity .8s ease, visibility .8s;
+}
+
+.screen.active {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.glow-text {
+  font-family: Cinzel, serif;
+  letter-spacing: 3px;
+  text-align: center;
+  text-shadow: 0 0 20px #7b2cbf99, 0 0 40px #7b2cbf4d;
+}
+
+.btn-cosmic {
+  background: linear-gradient(135deg, #3a1c5db3, #7b2cbfb3);
+  border: 1px solid #d4af3755;
+  color: var(--text-light);
+  padding: 13px 26px;
+  font-family: Cinzel, serif;
+  font-size: .88rem;
+  letter-spacing: 1.5px;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: all .25s ease;
+  box-shadow: 0 0 15px #3a1c5d66;
+  backdrop-filter: blur(5px);
+  margin-top: 18px;
+}
+
+.btn-cosmic:hover {
+  border-color: var(--accent-gold);
+  box-shadow: 0 0 25px #7b2cbfcc;
+  transform: translateY(-2px);
+}
+
+/* Back button */
+.back-btn {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 10;
+  padding: 9px 14px;
+  background: #08081dcc;
+  border: 1px solid #ffffff35;
+  color: var(--text-light);
+  border-radius: 6px;
+  font: 500 .78rem Inter, sans-serif;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+}
+
+.back-btn:hover {
+  border-color: var(--accent-gold);
+}
+
+/* PIN screen */
+.unlock-container {
+  max-width: 400px;
+  width: 100%;
+  background: #0a0a2699;
+  border: 1px solid #7b2cbf44;
+  border-radius: 16px;
+  padding: 28px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 20px 50px #0008;
+  text-align: center;
+}
+
+.star-deco {
+  color: var(--accent-gold);
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+  animation: pulseGlow 3s infinite;
+}
+
+.unlock-container h1 {
+  font-size: 1.55rem;
+  margin-bottom: 8px;
+  color: #fff;
+}
+
+.unlock-container p {
+  font-size: .86rem;
+  color: var(--text-muted);
+  margin-bottom: 22px;
+}
+
+.pin-display {
+  background: #050515cc;
+  border: 1px solid #7b2cbf66;
+  height: 48px;
+  border-radius: 8px;
+  margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.pin-dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: #ffffff1a;
+}
+
+.pin-dot.filled {
+  background: var(--accent-gold);
+  box-shadow: 0 0 10px var(--accent-gold);
+}
+
+.keypad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.key {
+  background: #ffffff08;
+  border: 1px solid #ffffff18;
+  color: var(--text-light);
+  font-size: 1.1rem;
+  padding: 12px 0;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.key:hover {
+  background: #7b2cbf4d;
+  border-color: var(--violet);
+}
+
+.key.action-key {
+  font-size: .78rem;
+  color: var(--text-muted);
+}
+
+.error-msg {
+  color: #f87171;
+  font-size: .82rem;
+  min-height: 20px;
+  margin-top: 8px;
+  opacity: 0;
+}
+
+.transition-title {
+  font-size: clamp(1.5rem, 4vw, 2.2rem);
+  margin-bottom: 8px;
+}
+
+.intro-title {
+  font-size: clamp(2rem, 6vw, 3.4rem);
+  color: #fff;
+  margin-bottom: 8px;
+}
+
+.intro-date {
+  font-family: Cinzel, serif;
+  color: var(--accent-gold);
+  font-size: 1.1rem;
+  letter-spacing: 5px;
+  margin-bottom: 12px;
+}
+
+/* November calendar */
+.calendar-wrap {
+  width: min(330px, 92vw);
+  margin: 12px auto;
+  padding: 16px 17px 14px;
+  background: #08081dcc;
+  border: 1px solid #d4af3744;
+  border-radius: 12px;
+  box-shadow: 0 0 25px #3a1c5d33;
+  backdrop-filter: blur(8px);
+}
+
+.calendar-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  font-family: Cinzel, serif;
+  color: var(--accent-gold);
+  letter-spacing: 2px;
+  font-size: .95rem;
+}
+
+.calendar-heading span:last-child {
+  font-family: Inter, sans-serif;
+  font-size: .72rem;
+  color: var(--text-muted);
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 5px;
+  text-align: center;
+}
+
+.weekday {
+  font-size: .67rem;
+  color: var(--text-muted);
+  padding: 5px 0;
+}
+
+.calendar-day {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  font-size: .78rem;
+  color: #e2e8f0;
+}
+
+.calendar-day.empty {
+  visibility: hidden;
+}
+
+.calendar-day.birthday {
+  background: var(--accent-gold);
+  color: #17120a;
+  font-weight: 700;
+  box-shadow: 0 0 14px #d4af3766;
+}
+
+.calendar-note {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: .72rem;
+  margin-top: 10px;
+}
+
+.intro-para {
+  max-width: 540px;
+  text-align: center;
+  line-height: 1.8;
+  color: var(--text-muted);
+  font-size: .95rem;
+  margin: 12px 0;
+}
+
+/* Photos */
+.memories-screen {
+  justify-content: flex-start;
+  padding-top: 65px;
+  padding-bottom: 35px;
+}
+
+.memories-title {
+  font-size: clamp(1.7rem, 4vw, 2.2rem);
+  margin: 0 0 24px;
+  color: #fff;
+}
+
+.grid-container {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  max-width: 900px;
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.photo-card {
+  background: #0a0a26b3;
+  border: 1px solid #ffffff1c;
+  border-bottom: 8px solid #ffffffe6;
+  padding: 10px;
+  border-radius: 4px;
+  box-shadow: 0 10px 25px #0006;
+  transition: transform .3s;
+  min-height: 150px;
+  aspect-ratio: 4 / 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.photo-card:hover {
+  transform: scale(1.025) rotate(.5deg);
+  border-bottom-color: var(--accent-gold);
+}
+
+.photo-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #080817;
+  border-radius: 2px;
+}
+
+.photo-placeholder {
+  font-family: "Cormorant Garamond", serif;
+  color: #bdb7d3;
+  font-size: 1rem;
+  text-align: center;
+}
+
+.footer-message {
+  font-family: "Cormorant Garamond", serif;
+  font-style: italic;
+  font-size: clamp(1.15rem, 3vw, 1.45rem);
+  color: var(--text-light);
+  text-align: center;
+  margin: 14px auto 0;
+  max-width: 650px;
+  line-height: 1.5;
+}
+
+/* Envelope and letter */
+.envelope-screen {
+  gap: 10px;
+}
+
+.envelope-hint {
+  color: var(--text-muted);
+  font-family: "Cormorant Garamond", serif;
+  font-size: 1.15rem;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.envelope-container {
+  position: relative;
+  width: min(550px, 92vw);
+  height: min(430px, 65vh);
+  min-height: 320px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  perspective: 1000px;
+}
+
+.envelope {
+  position: relative;
+  width: min(400px, 82vw);
+  height: 260px;
+  background: #16163a;
+  border: 1px solid #7b2cbf66;
+  box-shadow: 0 20px 40px #0009;
+  cursor: pointer;
+  transition: transform .8s;
+  transform-style: preserve-3d;
+}
+
+.envelope::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  background: linear-gradient(135deg, #ffffff0d, transparent 50%);
+  pointer-events: none;
+}
+
+.flap {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  border-left: 200px solid transparent;
+  border-right: 200px solid transparent;
+  border-top: 140px solid #222254;
+  transform-origin: top;
+  transition: transform .6s ease;
+  z-index: 4;
+}
+
+.pocket {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  border-left: 200px solid #1a1a44;
+  border-right: 200px solid #1a1a44;
+  border-top: 130px solid transparent;
+  z-index: 3;
+}
+
+.pocket-cover {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 130px;
+  background: #131333;
+  clip-path: polygon(0 100%, 100% 100%, 50% 0);
+  z-index: 3;
+}
+
+.wax-seal {
+  position: absolute;
+  top: 120px;
+  left: calc(50% - 20px);
+  width: 40px;
+  height: 40px;
+  background: var(--accent-gold);
+  border-radius: 50%;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #000;
+  transition: opacity .3s;
+}
+
+.letter {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  translate: -50% 0;
+  width: min(370px, 78vw);
+  background: var(--paper);
+  color: var(--ink);
+  padding: 25px;
+  font-family: "Cormorant Garamond", serif;
+  font-size: 1.08rem;
+  line-height: 1.45;
+  z-index: 2;
+  transition: transform .8s, opacity .8s;
+  transform: translateY(0) scale(.95);
+  max-height: 360px;
+  overflow: auto;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.letter-content h2 {
+  font-family: Cinzel, serif;
+  font-size: 1.2rem;
+  margin-bottom: 12px;
+  border-bottom: 1px solid #0002;
+  padding-bottom: 5px;
+}
+
+.letter-content p {
+  margin-bottom: 10px;
+}
+
+.letter-sign {
+  margin-top: 14px;
+  text-align: right;
+  font-style: italic;
+  font-weight: 600;
+}
+
+.envelope-container.open .flap {
+  transform: rotateX(180deg);
+  z-index: 1;
+}
+
+.envelope-container.open .wax-seal {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.envelope-container.open .letter {
+  z-index: 10;
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(-135px) scale(1);
+  max-height: min(460px, 70vh);
+  width: min(440px, 88vw);
+}
+
+@keyframes pulseGlow {
+  0%, 100% { opacity: .6; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.12); }
+}
+
+@media (max-width: 700px) {
+  #screen-intro {
+    justify-content: flex-start;
+    padding-top: 65px;
+    padding-bottom: 28px;
+  }
+
+  .grid-container {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .photo-card {
+    min-height: 110px;
+    padding: 7px;
+  }
+
+  .memories-screen {
+    padding: 65px 15px 25px;
+  }
+
+  .memories-title {
+    margin-bottom: 18px;
+  }
+
+  .envelope-container {
+    min-height: 340px;
+  }
+
+  .envelope {
+    width: 320px;
+    height: 210px;
+  }
+
+  .flap {
+    border-left-width: 160px;
+    border-right-width: 160px;
+    border-top-width: 110px;
+  }
+
+  .pocket {
+    border-left-width: 160px;
+    border-right-width: 160px;
+  }
+
+  .pocket-cover {
+    height: 110px;
+  }
+
+  .wax-seal {
+    top: 95px;
+  }
+
+  .letter {
+    font-size: 1rem;
+    padding: 20px;
+  }
+}
+
+@media (max-width: 420px) {
+  .back-btn {
+    top: 10px;
+    left: 10px;
+    padding: 8px 11px;
+  }
+
+  .calendar-wrap {
+    padding: 13px;
+  }
+
+  .calendar-grid {
+    gap: 3px;
+  }
+
+  .grid-container {
+    gap: 9px;
+  }
+
+  .photo-card {
+    min-height: 95px;
+    padding: 5px;
+  }
+
+  .unlock-container {
+    padding: 22px;
+  }
+
+  .envelope {
+    width: 280px;
+    height: 190px;
+  }
+
+  .flap {
+    border-left-width: 140px;
+    border-right-width: 140px;
+    border-top-width: 95px;
+  }
+
+  .pocket {
+    border-left-width: 140px;
+    border-right-width: 140px;
+  }
+
+  .pocket-cover {
+    height: 95px;
+  }
+
+  .wax-seal {
+    top: 80px;
+  }
+
+  .envelope-container.open .letter {
+    transform: translateY(-120px) scale(1);
+    max-height: 65vh;
+  }
+}
+</style>
+</head>
+
+<body>
+<canvas id="space-canvas" aria-hidden="true"></canvas>
+
+<!-- SCREEN 1: PIN LOCK -->
+<section id="screen-lock" class="screen active">
+  <div class="unlock-container">
+    <div class="star-deco">✦</div>
+    <h1 class="glow-text">Unlock Your Surprise</h1>
+    <p>A little something is waiting for you in the stars.</p>
+
+    <div class="pin-display">
+      <span class="pin-dot" id="dot-0"></span>
+      <span class="pin-dot" id="dot-1"></span>
+      <span class="pin-dot" id="dot-2"></span>
+      <span class="pin-dot" id="dot-3"></span>
+    </div>
+
+    <div class="keypad">
+      <button class="key" onclick="pressKey('1')">1</button>
+      <button class="key" onclick="pressKey('2')">2</button>
+      <button class="key" onclick="pressKey('3')">3</button>
+      <button class="key" onclick="pressKey('4')">4</button>
+      <button class="key" onclick="pressKey('5')">5</button>
+      <button class="key" onclick="pressKey('6')">6</button>
+      <button class="key" onclick="pressKey('7')">7</button>
+      <button class="key" onclick="pressKey('8')">8</button>
+      <button class="key" onclick="pressKey('9')">9</button>
+      <button class="key action-key" onclick="clearPIN()">CLR</button>
+      <button class="key" onclick="pressKey('0')">0</button>
+      <button class="key action-key" onclick="validatePIN()">OK</button>
+    </div>
+
+    <div class="error-msg" id="error-message">
+      Incorrect PIN. Try again.
+    </div>
+  </div>
+</section>
+
+<!-- SCREEN 2 -->
+<section id="screen-unlocked" class="screen">
+  <button class="back-btn" onclick="navigateTo('screen-lock')">← Back</button>
+  <h1 class="glow-text transition-title">
+    Something special is waiting...
+  </h1>
+  <button class="btn-cosmic" onclick="navigateTo('screen-intro')">
+    Open It!
+  </button>
+</section>
+
+<!-- SCREEN 3: BIRTHDAY + CALENDAR -->
+<section id="screen-intro" class="screen">
+  <button class="back-btn" onclick="navigateTo('screen-unlocked')">← Back</button>
+
+  <h1 class="glow-text intro-title">Happy Birthday, Saim</h1>
+  <div class="intro-date">09 • NOVEMBER</div>
+
+  <div class="calendar-wrap">
+    <div class="calendar-heading">
+      <span>NOVEMBER</span>
+      <span>2026</span>
+    </div>
+
+    <div class="calendar-grid">
+      <div class="weekday">SUN</div>
+      <div class="weekday">MON</div>
+      <div class="weekday">TUE</div>
+      <div class="weekday">WED</div>
+      <div class="weekday">THU</div>
+      <div class="weekday">FRI</div>
+      <div class="weekday">SAT</div>
+
+      <div class="calendar-day">1</div>
+      <div class="calendar-day">2</div>
+      <div class="calendar-day">3</div>
+      <div class="calendar-day">4</div>
+      <div class="calendar-day">5</div>
+      <div class="calendar-day">6</div>
+      <div class="calendar-day">7</div>
+      <div class="calendar-day">8</div>
+      <div class="calendar-day birthday">9</div>
+      <div class="calendar-day">10</div>
+      <div class="calendar-day">11</div>
+      <div class="calendar-day">12</div>
+      <div class="calendar-day">13</div>
+      <div class="calendar-day">14</div>
+      <div class="calendar-day">15</div>
+      <div class="calendar-day">16</div>
+      <div class="calendar-day">17</div>
+      <div class="calendar-day">18</div>
+      <div class="calendar-day">19</div>
+      <div class="calendar-day">20</div>
+      <div class="calendar-day">21</div>
+      <div class="calendar-day">22</div>
+      <div class="calendar-day">23</div>
+      <div class="calendar-day">24</div>
+      <div class="calendar-day">25</div>
+      <div class="calendar-day">26</div>
+      <div class="calendar-day">27</div>
+      <div class="calendar-day">28</div>
+      <div class="calendar-day">29</div>
+      <div class="calendar-day">30</div>
+    </div>
+
+    <div class="calendar-note">✦ 9 November — Saim’s day ✦</div>
+  </div>
+
+  <p class="intro-para">
+    Navigating through another orbit around the sun. May your path ahead
+    be bright, expansive, and full of clear skies. Here is a small
+    collection of elements put together just for your day.
+  </p>
+
+  <button class="btn-cosmic" onclick="navigateTo('screen-memories')">
+    Let’s explore →
+  </button>
+</section>
+
+<!-- SCREEN 4: PHOTOS -->
+<section id="screen-memories" class="screen memories-screen">
+  <button class="back-btn" onclick="navigateTo('screen-intro')">← Back</button>
+
+  <h1 class="glow-text memories-title">Captured Orbits</h1>
+
+  <div class="grid-container">
+    <div class="photo-card">
+      <img src="pics/photo1.png" alt="Photo 1"
+           onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+      <span class="photo-placeholder" style="display:none">Add photo 1</span>
+    </div>
+
+    <div class="photo-card">
+      <img src="pics/photo2.png" alt="Photo 2"
+           onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+      <span class="photo-placeholder" style="display:none">Add photo 2</span>
+    </div>
+
+    <div class="photo-card">
+      <img src="pics/photo3.png" alt="Photo 3"
+           onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+      <span class="photo-placeholder" style="display:none">Add photo 3</span>
+    </div>
+
+    <div class="photo-card">
+      <img src="pics/photo4.png" alt="Photo 4"
+           onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+      <span class="photo-placeholder" style="display:none">Add photo 4</span>
+    </div>
+
+    <div class="photo-card">
+      <img src="pics/photo5.png" alt="Photo 5"
+           onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+      <span class="photo-placeholder" style="display:none">Add photo 5</span>
+    </div>
+
+    <div class="photo-card">
+      <img src="pics/photo6.png" alt="Photo 6"
+           onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+      <span class="photo-placeholder" style="display:none">Add photo 6</span>
+    </div>
+  </div>
+
+  <p class="footer-message">
+    And there is one more thing I wanted to leave here...
+  </p>
+
+  <button class="btn-cosmic" onclick="navigateTo('screen-letter')">
+    One more thing →
+  </button>
+</section>
+
+<!-- SCREEN 5: ENVELOPE AND LETTER -->
+<section id="screen-letter" class="screen envelope-screen">
+  <button class="back-btn" onclick="navigateTo('screen-memories')">← Back</button>
+
+  <p class="envelope-hint">There’s a little note for you. Tap the envelope.</p>
+
+  <div class="envelope-container" id="env-container">
+    <div class="envelope" onclick="openEnvelope()">
+      <div class="flap"></div>
+      <div class="pocket"></div>
+      <div class="pocket-cover"></div>
+      <div class="wax-seal">✦</div>
+    </div>
+
+    <article class="letter" id="letter">
+      <div class="letter-content">
+        <h2>Dear Saim,</h2>
+
+        <p>
+         May the year ahead be filled with meaningful experiences, wonderful achievements, and beautiful moments worth remembering. I hope you always have the strength to overcome challenges and the courage to follow your dreams.
+        </p>
+
+        <p>
+          I hope this year of your life brings you happiness, peace, success, and lots of reasons to smile. I hope you get closer to the things you want, and that life gives you more good days than bad ones.
+        </p>
+
+        <p>
+          I hope today gives you a chance to pause, enjoy the moment,
+          and look forward to everything the coming year has waiting
+          for you. Have an amazing, peaceful birthday.
+        </p>
+<p>Happy Birthday once again</p>
+        <p class="letter-sign">Warmly,</p>
+      </div>
+    </article>
+  </div>
+
+  <button class="btn-cosmic" onclick="navigateTo('screen-memories')">
+    ← Back to memories
+  </button>
+</section>
+
+<script>
+// Galaxy background animation
+const canvas = document.getElementById('space-canvas');
+const ctx = canvas.getContext('2d');
+
+let stars = [];
+let nebulae = [];
+
+function resizeCanvas() {
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+  canvas.width = Math.floor(window.innerWidth * dpr);
+  canvas.height = Math.floor(window.innerHeight * dpr);
+  canvas.style.width = window.innerWidth + 'px';
+  canvas.style.height = window.innerHeight + 'px';
+
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  initSpace();
+}
+
+function initSpace() {
+  stars = [];
+
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+  const count = Math.min(260, Math.floor((w * h) / 3000));
+
+  for (let i = 0; i < count; i++) {
+    stars.push({
+      x: Math.random() * w,
+      y: Math.random() * h,
+      size: Math.random() * 1.5 + .2,
+      speed: .01 + Math.random() * .03,
+      phase: Math.random() * Math.PI
+    });
+  }
+
+  nebulae = [
+    {x: w * .25, y: h * .3, radius: w * .3,
+     color: 'rgba(58,28,93,0.16)'},
+    {x: w * .75, y: h * .6, radius: w * .35,
+     color: 'rgba(123,44,191,0.11)'}
+  ];
+}
+
+function drawSpace() {
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+
+  ctx.clearRect(0, 0, w, h);
+  ctx.fillStyle = '#050515';
+  ctx.fillRect(0, 0, w, h);
+
+  nebulae.forEach(neb => {
+    const gradient = ctx.createRadialGradient(
+      neb.x, neb.y, 0, neb.x, neb.y, neb.radius
+    );
+    gradient.addColorStop(0, neb.color);
+    gradient.addColorStop(1, 'transparent');
+
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(neb.x, neb.y, neb.radius, 0, Math.PI * 2);
+    ctx.fill();
+  });
+
+  stars.forEach(star => {
+    star.phase += star.speed;
+    const alpha = .3 + (Math.sin(star.phase) + 1) * .35;
+
+    ctx.fillStyle = `rgba(255,255,255,${alpha})`;
+    ctx.beginPath();
+    ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+    ctx.fill();
+  });
+
+  requestAnimationFrame(drawSpace);
+}
+
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+drawSpace();
+
+// PIN keypad
+const SECRET_PIN = '2005';
+let enteredPIN = '';
+
+function updateDisplay() {
+  for (let i = 0; i < 4; i++) {
+    document.getElementById(`dot-${i}`)
+      .classList.toggle('filled', i < enteredPIN.length);
+  }
+}
+
+function pressKey(num) {
+  if (enteredPIN.length >= 4) return;
+
+  enteredPIN += String(num);
+  updateDisplay();
+
+  document.getElementById('error-message').style.opacity = '0';
+
+  if (enteredPIN.length === 4) {
+    setTimeout(validatePIN, 180);
+  }
+}
+
+function clearPIN() {
+  enteredPIN = '';
+  updateDisplay();
+  document.getElementById('error-message').style.opacity = '0';
+}
+
+function validatePIN() {
+  if (enteredPIN === SECRET_PIN) {
+    navigateTo('screen-unlocked');
+  } else {
+    enteredPIN = '';
+    updateDisplay();
+
+    const error = document.getElementById('error-message');
+    error.textContent = 'Incorrect PIN. Try again.';
+    error.style.opacity = '1';
+  }
+}
+
+// Screen navigation and Back buttons
+function navigateTo(nextScreenId) {
+  const nextScreen = document.getElementById(nextScreenId);
+  if (!nextScreen) return;
+
+  document.querySelectorAll('.screen').forEach(screen => {
+    screen.classList.remove('active');
+  });
+
+  setTimeout(() => {
+    nextScreen.classList.add('active');
+  }, 40);
+
+  if (nextScreenId === 'screen-letter') {
+    document.getElementById('env-container').classList.remove('open');
+  }
+}
+
+// Envelope interaction
+function openEnvelope() {
+  document.getElementById('env-container').classList.add('open');
+}
+
+// Keyboard support on PIN screen
+document.addEventListener('keydown', event => {
+  const lock = document.getElementById('screen-lock');
+
+  if (!lock.classList.contains('active')) return;
+
+  if (/^\d$/.test(event.key)) {
+    pressKey(event.key);
+  } else if (event.key === 'Backspace' || event.key === 'Escape') {
+    clearPIN();
+  } else if (event.key === 'Enter') {
+    validatePIN();
+  }
+});
+</script>
+</body>
+</html>
